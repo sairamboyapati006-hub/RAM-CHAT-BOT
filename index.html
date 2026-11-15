@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Chatbot</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h2>Ram Chat - BOT</h2>
+            <p>Powered by Groq AI</p>
+        </div>
+
+        <div class="chat-box" id="chat-box">
+
+            <div class="bot-message">
+                Hello! Welcome to AI Chatbot.
+                How can I help you today?
+            </div>
+
+        </div>
+
+        <div class="input-area">
+
+            <input
+                type="text"
+                id="user-input"
+                placeholder="Ask me anything..."
+            >
+
+            <button onclick="sendMessage()" id="send-btn">
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+<script>
+
+async function sendMessage() {
+
+    let input = document.getElementById("user-input");
+    let chatBox = document.getElementById("chat-box");
+    let button = document.getElementById("send-btn");
+
+    let message = input.value.trim();
+
+    if (message === "") {
+        return;
+    }
+
+    // Display user message
+    let userMessage = document.createElement("div");
+
+    userMessage.className = "user-message";
+    userMessage.textContent = message;
+
+    chatBox.appendChild(userMessage);
+
+    input.value = "";
+
+    // Loading message
+    let botMessage = document.createElement("div");
+
+    botMessage.className = "bot-message";
+    botMessage.textContent = "Thinking...";
+
+    chatBox.appendChild(botMessage);
+
+    button.disabled = true;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+
+        let response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+
+        });
+
+        let data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Request failed");
+        }
+
+        botMessage.textContent = data.reply;
+
+    }
+
+    catch (error) {
+
+        botMessage.textContent = "Error: " + error.message;
+
+    }
+
+    finally {
+
+        button.disabled = false;
+        input.focus();
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    }
+
+}
+
+// Enter key support
+document.getElementById("user-input")
+.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
